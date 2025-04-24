@@ -17,7 +17,7 @@
             <input type="email" id="admin-email" name="admin-email" required>
             <label for="admin-password">Senha:</label>
             <input type="password" id="admin-password" name="admin-password" required>
-            <button onclick="loginAdmin()">Entrar</button>
+            <button id="login-button">Entrar</button>
             <p id="login-error" style="color: red; display: none;">Credenciais inválidas.</p>
             <p><a href="index.html">Menu</a></p>
         </div>
@@ -27,8 +27,8 @@
             <h1>Painel de Administração</h1>
             <div class="user-controls">
                 <span id="logged-in-admin-name" style="color: #fff; margin-right: 10px;"></span>
+                <button id="logout-admin-button" class="button">Sair</button>
                 <button id="theme-toggle-button" class="button" title="Alternar Tema">🌙</button>
-                <button id="logout-admin-button" onclick="logoutAdmin()" class="button">Sair</button>
             </div>
         </div>
 
@@ -41,6 +41,9 @@
             <button id="tab-budgets" class="tab-button">Orçamentos</button>
             <button id="tab-support-requests" class="tab-button">Pedidos de Suporte</button>
             <button id="tab-contact-us" class="tab-button">Fale Conosco</button>
+            <button id="tab-popular-products" class="tab-button">Mais Procurados</button>
+            <button id="tab-new-products" class="tab-button">Novos Produtos</button>
+            <button id="tab-offers" class="tab-button">Ofertas da Semana</button>
         </div>
 
         <div id="products-content" class="tab-content">
@@ -134,6 +137,35 @@
 
         <div id="contact-us-content" class="tab-content">
             <h2>Mensagens Fale Conosco</h2>
+        </div>
+        <div id="popular-products-content" class="tab-content">
+            <h2>Gerenciar Produtos Mais Procurados</h2>
+            <p>Selecione os produtos que você deseja exibir como mais procurados:</p>
+            <form id="popular-products-form">
+                <ul id="popular-products-checkbox-list">
+                </ul>
+                <button type="submit" class="button submit-button">Salvar Produtos Mais Procurados</button>
+            </form>
+        </div>
+
+        <div id="new-products-content" class="tab-content">
+            <h2>Gerenciar Novos Produtos</h2>
+            <p>Selecione os produtos que você deseja exibir como novos produtos:</p>
+            <form id="new-products-form">
+                <ul id="new-products-checkbox-list">
+                </ul>
+                <button type="submit" class="button submit-button">Salvar Novos Produtos</button>
+            </form>
+        </div>
+
+        <div id="offers-content" class="tab-content">
+            <h2>Gerenciar Ofertas da Semana</h2>
+            <p>Selecione os produtos que estarão em oferta esta semana e defina os preços de oferta:</p>
+            <form id="offers-form">
+                <ul id="offers-checkbox-list">
+                </ul>
+                <button type="submit" class="button submit-button">Salvar Ofertas da Semana</button>
+            </form>
         </div>
 
         <div class="footer">

@@ -706,6 +706,117 @@ body.dark-theme .footer {
     border-top-color: #444;
 }
 
+/* Estilos para as Listas de Produtos em Destaque no Admin */
+#popular-products-content ul#popular-products-checkbox-list,
+#new-products-content ul#new-products-checkbox-list,
+#offers-content ul#offers-checkbox-list {
+    list-style: none;
+    padding: 0;
+}
+
+#popular-products-content ul#popular-products-checkbox-list li,
+#new-products-content ul#new-products-checkbox-list li,
+#offers-content ul#offers-checkbox-list li {
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 10px;
+    margin-bottom: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* Para ofertas: checkbox/label à esquerda, preços à direita */
+}
+
+body.dark-theme #popular-products-content ul#popular-products-checkbox-list li,
+body.dark-theme #new-products-content ul#new-products-checkbox-list li,
+body.dark-theme #offers-content ul#offers-checkbox-list li {
+    background-color: #2a2a2a;
+    border-color: #444;
+    color: #f5f5f5;
+}
+
+/* Estilos para o container do checkbox e label */
+#popular-products-content .popular-product-info,
+#new-products-content .new-product-info,
+#offers-content .offer-product-info {
+    display: flex;
+    align-items: center;
+}
+
+#popular-products-content .popular-product-info input[type="checkbox"],
+#new-products-content .new-product-info input[type="checkbox"],
+#offers-content .offer-product-info input[type="checkbox"] {
+    margin-right: 8px;
+}
+
+/* Estilos para os campos de preço nas ofertas */
+#offers-content .offer-prices {
+    display: flex;
+    gap: 10px;
+}
+
+#offers-content .offer-prices input[type="number"] {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 0.9em;
+    width: 120px; /* Ajuste a largura conforme necessário */
+    background-color: #f9f9f9;
+    color: #333;
+}
+
+body.dark-theme #offers-content .offer-prices input[type="number"] {
+    background-color: #333;
+    color: #f5f5f5;
+    border-color: #555;
+}
+
+#offers-content .offer-prices input[type="number"]:focus {
+    border-color: #007bff;
+    outline: none;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+    background-color: white;
+}
+
+.delete-item-button {
+    margin-left: 10px;
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9em;
+}
+
+.delete-item-button:hover {
+    background-color: #c82333;
+}
+
+body.dark-theme .delete-item-button {
+    background-color: #a94442;
+    color: #f8d7da;
+}
+
+body.dark-theme .delete-item-button:hover {
+    background-color: #842029;
+}
+
+.popular-item,
+.new-item,
+.offer-item {
+    /* Mantenha seus estilos existentes */
+    justify-content: space-between; /* Garante espaço para o botão excluir */
+}
+
+.popular-product-info,
+.new-product-info,
+.offer-product-info {
+    /* Mantenha seus estilos existentes */
+    flex-grow: 1; /* Permite que a info do produto ocupe mais espaço */
+}
+
 /* Responsivo */
 @media (max-width: 768px) {
     .header-controls {

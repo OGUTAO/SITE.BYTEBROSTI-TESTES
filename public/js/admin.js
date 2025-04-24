@@ -1,8 +1,14 @@
 let isAdminLoggedIn = localStorage.getItem('isAdminLoggedIn') === 'true';
-let isSuperAdmin = localStorage.getItem('isAdminSuper') === 'true';
+let loggedInAdmin = localStorage.getItem('loggedInAdmin') ? JSON.parse(localStorage.getItem('loggedInAdmin')) : null;
 let adminAccounts = loadAdminAccounts();
-
+let isSuperAdmin = loggedInAdmin ? loggedInAdmin.isSuper : false;
+let products = loadProductsFromLocalStorage();
+let news = loadNewsFromLocalStorage();
+let popularProductsList = loadPopularProductsFromLocalStorage();
+let newProductsListAdmin = loadNewProductsAdminFromLocalStorage();
+let offersListAdmin = loadOffersAdminFromLocalStorage();
 // Seleção de elementos do DOM
+
 const loginSection = document.getElementById('login-section');
 const adminContent = document.getElementById('admin-content');
 const loginButton = document.getElementById('login-button');
@@ -26,11 +32,12 @@ const contactUsContent = document.getElementById('contact-us-content');
 const addProductForm = document.getElementById('add-product-form');
 const addNewsForm = document.getElementById('add-news-form');
 const themeToggleButton = document.getElementById('theme-toggle-button');
-
-
-// Dados iniciais
-let products = loadProductsFromLocalStorage();
-let news = loadNewsFromLocalStorage();
+const popularProductsContent = document.getElementById('popular-products-content');
+const newProductsContent = document.getElementById('new-products-content');
+const offersContent = document.getElementById('offers-content');
+const tabPopularProducts = document.getElementById('tab-popular-products');
+const tabNewProducts = document.getElementById('tab-new-products');
+const tabOffers = document.getElementById('tab-offers');
 
 // Funções para manipulação de dados no localStorage
 function loadProductsFromLocalStorage() {
@@ -58,6 +65,32 @@ function loadAdminAccounts() {
 
 function saveAdminAccounts(accounts) {
     localStorage.setItem('adminAccounts', JSON.stringify(accounts));
+}
+function loadPopularProductsFromLocalStorage() {
+    const storedPopular = localStorage.getItem('popularProducts');
+    return storedPopular ? JSON.parse(storedPopular) : [];
+}
+
+function savePopularProductsToLocalStorage(popularProducts) {
+    localStorage.setItem('popularProducts', JSON.stringify(popularProducts));
+}
+
+function loadNewProductsAdminFromLocalStorage() {
+    const storedNew = localStorage.getItem('newProductsAdmin');
+    return storedNew ? JSON.parse(storedNew) : [];
+}
+
+function saveNewProductsAdminToLocalStorage(newProducts) {
+    localStorage.setItem('newProductsAdmin', JSON.stringify(newProducts));
+}
+
+function loadOffersAdminFromLocalStorage() {
+    const storedOffers = localStorage.getItem('offersAdmin');
+    return storedOffers ? JSON.parse(storedOffers) : [];
+}
+
+function saveOffersAdminToLocalStorage(offers) {
+    localStorage.setItem('offersAdmin', JSON.stringify(offers));
 }
 
 // Funções para controle da interface
@@ -147,8 +180,8 @@ function loginAdmin() {
 }
 
 function switchTab(tabName) {
-    const tabs = [tabProducts, tabAddProduct, tabAddNews, tabAdmins, tabBudgets, tabSupportRequests, tabContactUs];
-    const contents = [productsContent, addProductContent, addNewsContent, adminsContent, budgetsContent, supportRequestsContent, contactUsContent];
+    const tabs = [tabProducts, tabAddProduct, tabAddNews, tabAdmins, tabBudgets, tabSupportRequests, tabContactUs, tabPopularProducts, tabNewProducts, tabOffers];
+    const contents = [productsContent, addProductContent, addNewsContent, adminsContent, budgetsContent, supportRequestsContent, contactUsContent, popularProductsContent, newProductsContent, offersContent];
     const tabAdminsButton = document.getElementById('tab-admins');
     const adminsContentDiv = document.getElementById('admins-content');
 
@@ -164,7 +197,6 @@ function switchTab(tabName) {
         tabProducts.classList.add('active');
         productsContent.classList.add('active');
         products = loadProductsFromLocalStorage();
-        // *** ADICIONANDO UM PEQUENO DELAY ANTES DE RENDERIZAR ***
         setTimeout(() => {
             const productList = document.getElementById('product-list');
             if (productList) {
@@ -172,7 +204,7 @@ function switchTab(tabName) {
             } else {
                 console.error('Elemento productList não encontrado APÓS o timeout ao trocar para a aba Produtos.');
             }
-        }, 50); // Um delay de 50 milissegundos
+        }, 50);
         if (adminsContentDiv) adminsContentDiv.style.display = 'none';
     } else if (tabName === 'add-product' && tabAddProduct && addProductContent) {
         tabAddProduct.classList.add('active');
@@ -203,6 +235,21 @@ function switchTab(tabName) {
         contactUsContent.classList.add('active');
         renderMensagensFaleConosco();
         if (adminsContentDiv) adminsContentDiv.style.display = 'none';
+    } else if (tabName === 'popular-products' && tabPopularProducts && popularProductsContent) {
+        tabPopularProducts.classList.add('active');
+        popularProductsContent.classList.add('active');
+        renderPopularProductsAdmin();
+        if (adminsContentDiv) adminsContentDiv.style.display = 'none';
+    } else if (tabName === 'new-products' && tabNewProducts && newProductsContent) {
+        tabNewProducts.classList.add('active');
+        newProductsContent.classList.add('active');
+        renderNewProductsAdminList();
+        if (adminsContentDiv) adminsContentDiv.style.display = 'none';
+    } else if (tabName === 'offers' && tabOffers && offersContent) {
+        tabOffers.classList.add('active');
+        offersContent.classList.add('active');
+        renderOffersAdminList();
+        if (adminsContentDiv) adminsContentDiv.style.display = 'none';
     }
 
     if (tabAdminsButton) {
@@ -230,6 +277,10 @@ window.addEventListener('load', () => {
         if (adminContentElement) {
             adminContentElement.style.display = 'block';
         }
+        renderPopularProductsAdmin(); 
+        renderNewProductsAdminList(); 
+        renderOffersAdminList();    
+
     } else {
         if (loginSectionElement) {
             loginSectionElement.style.display = 'flex';
@@ -261,8 +312,12 @@ function setupTabs() {
     if (tabBudgets) tabBudgets.addEventListener('click', () => switchTab('budgets'));
     if (tabSupportRequests) tabSupportRequests.addEventListener('click', () => switchTab('support-requests'));
     if (tabContactUs) tabContactUs.addEventListener('click', () => switchTab('contact-us'));
+    if (tabPopularProducts) tabPopularProducts.addEventListener('click', () => switchTab('popular-products'));
+    if (tabNewProducts) tabNewProducts.addEventListener('click', () => switchTab('new-products'));
+    if (tabOffers) tabOffers.addEventListener('click', () => switchTab('offers'));
 
-    switchTab('add-news');
+    switchTab('products');
+     
 }
 
 // Funções para renderizar dados na página
@@ -848,47 +903,6 @@ function loadMensagensFaleConosco() {
     return storedMensagens ? JSON.parse(storedMensagens) : [];
 }
 
-window.addEventListener('load', () => {
-    loadAdminAccounts();
-
-    const productList = document.getElementById('product-list');
-    console.log('Elemento productList (no load):', productList);
-
-    const loginSectionElement = document.getElementById('loginSection'); // Use o ID correto (com 'S' maiúsculo)
-    const adminContentElement = document.getElementById('adminContent');   // Use o ID correto (com 'C' maiúsculo)
-
-    // Garante que a seção de login seja mostrada inicialmente e o conteúdo admin escondido
-    if (loginSectionElement) {
-        loginSectionElement.style.display = 'flex'; // Ou 'block', dependendo do seu CSS
-    }
-    if (adminContentElement) {
-        adminContentElement.style.display = 'none';
-    }
-
-    // Verifica se o admin já está logado
-    if (isAdminLoggedIn) {
-        showAdminPanel();
-        if (loginSectionElement) {
-            loginSectionElement.style.display = 'none'; // Esconde o login se já estiver logado
-        }
-        if (adminContentElement) {
-            adminContentElement.style.display = 'block'; // Mostra o painel se já estiver logado
-        }
-    }
-
-    const loginButtonElement = document.getElementById('login-button'); // Use o ID correto do botão
-    if (loginButtonElement) {
-        loginButtonElement.addEventListener('click', loginAdmin);
-    }
-
-    const logoutButtonAdminElement = document.getElementById('logout-admin-button'); // Use o ID correto
-    if (logoutButtonAdminElement) {
-        logoutButtonAdminElement.addEventListener('click', logoutAdmin);
-    }
-
-    setupTabs();
-});;
-
 function enviarPedidoSuporte() {
     const nome = document.getElementById('nome').value;
     const email = document.getElementById('email').value;
@@ -1055,6 +1069,219 @@ if (addNewsForm) {
     });
 }
 
+function renderPopularProductsAdmin() {
+    const listElement = document.getElementById('popular-products-checkbox-list');
+    if (!listElement) return;
+    listElement.innerHTML = '';
+
+    products.forEach(product => {
+        const listItem = document.createElement('li');
+        listItem.classList.add('popular-item');
+
+        const productInfoDiv = document.createElement('div');
+        productInfoDiv.classList.add('popular-product-info');
+
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.value = product.id;
+        checkbox.id = `popular-${product.id}`;
+        checkbox.checked = popularProductsList.includes(product.id);
+
+        const label = document.createElement('label');
+        label.textContent = product.name;
+        label.htmlFor = checkbox.id;
+
+        productInfoDiv.appendChild(checkbox);
+        productInfoDiv.appendChild(label);
+        listItem.appendChild(productInfoDiv);
+
+        // Adicionar botão de excluir
+        const deleteButton = document.createElement('button');
+        deleteButton.textContent = 'Excluir';
+        deleteButton.classList.add('button', 'delete-item-button', 'danger');
+        deleteButton.dataset.productId = product.id;
+        deleteButton.addEventListener('click', removePopularProduct);
+        listItem.appendChild(deleteButton);
+
+        listElement.appendChild(listItem);
+    });
+
+    const form = document.getElementById('popular-products-form');
+    if (form) {
+        form.addEventListener('submit', savePopularProducts);
+    }
+}
+
+function savePopularProducts(event) {
+    event.preventDefault();
+    const checkboxes = document.querySelectorAll('#popular-products-checkbox-list input[type="checkbox"]:checked');
+    const selectedProducts = Array.from(checkboxes).map(cb => cb.value); // Salva apenas os IDs
+    savePopularProductsToLocalStorage(selectedProducts);
+    popularProductsList = selectedProducts; // Atualiza a variável global
+    alert('Produtos mais procurados salvos!');
+}
+
+function removePopularProduct(event) {
+    const productIdToRemove = event.currentTarget.dataset.productId;
+    popularProductsList = popularProductsList.filter(id => id !== productIdToRemove);
+    savePopularProductsToLocalStorage(popularProductsList);
+    renderPopularProductsAdmin();
+    alert('Produto removido dos Mais Procurados!');
+}
+
+function renderNewProductsAdminList() {
+    const listElement = document.getElementById('new-products-checkbox-list');
+    if (!listElement) return;
+    listElement.innerHTML = '';
+
+    products.forEach(product => {
+        const listItem = document.createElement('li');
+        listItem.classList.add('new-item');
+
+        const productInfoDiv = document.createElement('div');
+        productInfoDiv.classList.add('new-product-info');
+
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.value = product.id;
+        checkbox.id = `new-${product.id}`;
+        checkbox.checked = newProductsListAdmin.includes(product.id);
+
+        const label = document.createElement('label');
+        label.textContent = product.name;
+        label.htmlFor = checkbox.id;
+
+        productInfoDiv.appendChild(checkbox);
+        productInfoDiv.appendChild(label);
+        listItem.appendChild(productInfoDiv);
+
+        // Adicionar botão de excluir
+        const deleteButton = document.createElement('button');
+        deleteButton.textContent = 'Excluir';
+        deleteButton.classList.add('button', 'delete-item-button', 'danger');
+        deleteButton.dataset.productId = product.id;
+        deleteButton.addEventListener('click', removeNewProduct);
+        listItem.appendChild(deleteButton);
+
+        listElement.appendChild(listItem);
+    });
+
+    const form = document.getElementById('new-products-form');
+    if (form) {
+        form.addEventListener('submit', saveNewProductsAdmin);
+    }
+}
+
+function saveNewProductsAdmin(event) {
+    event.preventDefault();
+    const checkboxes = document.querySelectorAll('#new-products-checkbox-list input[type="checkbox"]:checked');
+    const selectedProducts = Array.from(checkboxes).map(cb => cb.value); // Salva apenas os IDs
+    saveNewProductsAdminToLocalStorage(selectedProducts);
+    newProductsListAdmin = selectedProducts;
+    alert('Novos produtos salvos!');
+}
+
+function removeNewProduct(event) {
+    const productIdToRemove = event.currentTarget.dataset.productId;
+    newProductsListAdmin = newProductsListAdmin.filter(id => id !== productIdToRemove);
+    saveNewProductsAdminToLocalStorage(newProductsListAdmin);
+    renderNewProductsAdminList();
+    alert('Produto removido dos Novos Produtos!');
+}
+
+function renderOffersAdminList() {
+    const listElement = document.getElementById('offers-checkbox-list');
+    if (!listElement) return;
+    listElement.innerHTML = '';
+
+    products.forEach(product => {
+        const listItem = document.createElement('li');
+        listItem.classList.add('offer-item');
+
+        const productInfoDiv = document.createElement('div');
+        productInfoDiv.classList.add('offer-product-info');
+
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.value = product.id;
+        checkbox.id = `offer-${product.id}`;
+        checkbox.checked = offersListAdmin.some(offer => offer.id === product.id);
+
+        const label = document.createElement('label');
+        label.textContent = product.name;
+        label.htmlFor = checkbox.id;
+
+        productInfoDiv.appendChild(checkbox);
+        productInfoDiv.appendChild(label);
+        listItem.appendChild(productInfoDiv);
+
+        const offerPricesDiv = document.createElement('div');
+        offerPricesDiv.classList.add('offer-prices');
+
+        const offerData = offersListAdmin.find(offer => offer.id === product.id);
+        const precoAntigoValue = offerData ? offerData.precoAntigo : '';
+        const precoAtualValue = offerData ? offerData.precoAtual : '';
+
+        const priceOldInput = document.createElement('input');
+        priceOldInput.type = 'number';
+        priceOldInput.placeholder = 'Preço Antigo';
+        priceOldInput.id = `old-price-${product.id}`;
+        priceOldInput.value = precoAntigoValue;
+
+        const priceCurrentInput = document.createElement('input');
+        priceCurrentInput.type = 'number';
+        priceCurrentInput.placeholder = 'Preço Oferta';
+        priceCurrentInput.id = `current-price-${product.id}`;
+        priceCurrentInput.value = precoAtualValue;
+
+        offerPricesDiv.appendChild(priceOldInput);
+        offerPricesDiv.appendChild(priceCurrentInput);
+        listItem.appendChild(offerPricesDiv);
+
+        // Adicionar botão de excluir
+        const deleteButton = document.createElement('button');
+        deleteButton.textContent = 'Excluir';
+        deleteButton.classList.add('button', 'delete-item-button', 'danger');
+        deleteButton.dataset.productId = product.id;
+        deleteButton.addEventListener('click', removeOfferProduct);
+        listItem.appendChild(deleteButton);
+
+        listElement.appendChild(listItem);
+    });
+
+    const form = document.getElementById('offers-form');
+    if (form) {
+        form.addEventListener('submit', saveOffersAdmin);
+    }
+}
+
+function saveOffersAdmin(event) {
+    event.preventDefault();
+    const checkboxes = document.querySelectorAll('#offers-checkbox-list input[type="checkbox"]:checked');
+    const selectedOffers = Array.from(checkboxes).map(cb => {
+        const productId = cb.value;
+        const oldPriceInput = document.getElementById(`old-price-${productId}`);
+        const currentPriceInput = document.getElementById(`current-price-${productId}`);
+        return {
+            id: productId,
+            precoAntigo: oldPriceInput ? parseFloat(oldPriceInput.value).toFixed(2) : null,
+            precoAtual: currentPriceInput ? parseFloat(currentPriceInput.value).toFixed(2) : null
+        };
+    });
+    saveOffersAdminToLocalStorage(selectedOffers);
+    offersListAdmin = selectedOffers;
+    alert('Ofertas da semana salvas!');
+}
+
+function removeOfferProduct(event) {
+    const productIdToRemove = event.currentTarget.dataset.productId;
+    offersListAdmin = offersListAdmin.filter(offer => offer.id !== productIdToRemove);
+    saveOffersAdminToLocalStorage(offersListAdmin);
+    renderOffersAdminList();
+    alert('Produto removido das Ofertas da Semana!');
+}
+
+
 let isDarkTheme = localStorage.getItem('isDarkTheme') === 'true';
 
 function applyTheme() {
@@ -1084,4 +1311,3 @@ applyTheme();
         loginSection.style.display = 'flex';
         adminContent.style.display = 'none';
     }
-    
