@@ -817,6 +817,99 @@ body.dark-theme .delete-item-button:hover {
     flex-grow: 1; /* Permite que a info do produto ocupe mais espaço */
 }
 
+/* Estilos específicos para a aba de Clientes */
+#clients-content {
+    display: flex;
+    flex-direction: column;
+    gap: 20px; /* Espaçamento entre os elementos da seção */
+    padding-top: 20px; /* Reduzi o padding-top, pois o problema era o posicionamento dos botões */
+}
+
+#form-busca-cliente {
+    display: flex;
+    gap: 10px; /* Espaçamento entre o input e o botão de busca */
+    align-items: center; /* Alinha verticalmente o input e o botão */
+}
+
+#busca-email-telefone {
+    flex-grow: 1; /* Faz o input ocupar o máximo de largura disponível */
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 1em;
+}
+
+#form-busca-cliente button {
+    padding: 10px 15px;
+}
+
+#resultados-busca {
+    margin-top: 10px;
+    padding: 15px;
+    border: 1px solid #eee;
+    border-radius: 6px;
+    background-color: #f9f9f9;
+}
+
+body.dark-theme #resultados-busca {
+    background-color: #333;
+    border-color: #555;
+    color: #f5f5f5;
+}
+
+#detalhes-cliente {
+    margin-top: 20px;
+    padding: 15px;
+    border: 1px solid #eee;
+    border-radius: 6px;
+    background-color: #f9f9f9;
+}
+
+body.dark-theme #detalhes-cliente {
+    background-color: #333;
+    border-color: #555;
+    color: #f5f5f5;
+}
+
+#lista-pedidos-cliente-adm,
+#lista-historico-cliente-adm {
+    margin-top: 20px;
+    padding: 15px;
+    border: 1px solid #eee;
+    border-radius: 6px;
+    background-color: #f9f9f9;
+}
+
+body.dark-theme #lista-pedidos-cliente-adm,
+body.dark-theme #lista-historico-cliente-adm {
+    background-color: #333;
+    border-color: #555;
+    color: #f5f5f5;
+}
+
+/* Ajuste para o posicionamento dos botões Menu e Acessar Loja */
+.tab-buttons {
+    margin-bottom: 10px;
+    display: flex;
+    gap: 10px; /* Ajuste o valor do espaçamento conforme necessário */
+    /* Outros estilos existentes para .tab-buttons */
+}
+
+.footer {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #ddd;
+    text-align: center;
+    font-size: 14px;
+    /* Remove qualquer posicionamento fixo ou sticky */
+    position: static !important;
+}
+
+.footer a.button {
+    /* Garante que os botões dentro do footer sigam o fluxo normal */
+    position: static !important;
+}
+
 /* Responsivo */
 @media (max-width: 768px) {
     .header-controls {

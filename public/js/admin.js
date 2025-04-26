@@ -7,8 +7,8 @@ let news = loadNewsFromLocalStorage();
 let popularProductsList = loadPopularProductsFromLocalStorage();
 let newProductsListAdmin = loadNewProductsAdminFromLocalStorage();
 let offersListAdmin = loadOffersAdminFromLocalStorage();
-// Seleção de elementos do DOM
 
+// Seleção de elementos do DOM
 const loginSection = document.getElementById('login-section');
 const adminContent = document.getElementById('admin-content');
 const loginButton = document.getElementById('login-button');
@@ -38,6 +38,9 @@ const offersContent = document.getElementById('offers-content');
 const tabPopularProducts = document.getElementById('tab-popular-products');
 const tabNewProducts = document.getElementById('tab-new-products');
 const tabOffers = document.getElementById('tab-offers');
+const formBuscaCliente = document.getElementById('form-busca-cliente');
+const tabClients = document.getElementById('tab-clients');
+const clientContent = document.getElementById('clients-content')
 
 // Funções para manipulação de dados no localStorage
 function loadProductsFromLocalStorage() {
@@ -180,8 +183,8 @@ function loginAdmin() {
 }
 
 function switchTab(tabName) {
-    const tabs = [tabProducts, tabAddProduct, tabAddNews, tabAdmins, tabBudgets, tabSupportRequests, tabContactUs, tabPopularProducts, tabNewProducts, tabOffers];
-    const contents = [productsContent, addProductContent, addNewsContent, adminsContent, budgetsContent, supportRequestsContent, contactUsContent, popularProductsContent, newProductsContent, offersContent];
+    const tabs = [tabProducts, tabAddProduct, tabAddNews, tabAdmins, tabBudgets, tabSupportRequests, tabContactUs, tabPopularProducts, tabNewProducts, tabOffers, tabClients];
+    const contents = [productsContent, addProductContent, addNewsContent, adminsContent, budgetsContent, supportRequestsContent, contactUsContent, popularProductsContent, newProductsContent, offersContent, clientContent];
     const tabAdminsButton = document.getElementById('tab-admins');
     const adminsContentDiv = document.getElementById('admins-content');
 
@@ -250,6 +253,10 @@ function switchTab(tabName) {
         offersContent.classList.add('active');
         renderOffersAdminList();
         if (adminsContentDiv) adminsContentDiv.style.display = 'none';
+    } else if (tabName === 'clients' && tabClients && clientContent) {
+        tabClients.classList.add('active');
+        clientContent.classList.add('active');
+        if (adminsContentDiv) adminsContentDiv.style.display = 'none';
     }
 
     if (tabAdminsButton) {
@@ -300,6 +307,10 @@ window.addEventListener('load', () => {
         logoutButtonAdminElement.addEventListener('click', logoutAdmin);
     }
 
+    if (formBuscaCliente) {
+        formBuscaCliente.addEventListener('submit', handleBuscarCliente);
+    }
+
     setupTabs();
     // A CHAMADA A renderAdminProducts JÁ ESTÁ DENTRO DE showAdminPanel()
 });
@@ -315,10 +326,232 @@ function setupTabs() {
     if (tabPopularProducts) tabPopularProducts.addEventListener('click', () => switchTab('popular-products'));
     if (tabNewProducts) tabNewProducts.addEventListener('click', () => switchTab('new-products'));
     if (tabOffers) tabOffers.addEventListener('click', () => switchTab('offers'));
+    if (tabClients) tabClients.addEventListener('click', () => switchTab('clients'));
 
     switchTab('products');
-     
 }
+
+const formBuscarCliente = document.getElementById('form-busca-cliente');
+const resultadosBuscaDiv = document.getElementById('resultados-busca');
+const detalhesClienteDiv = document.getElementById('detalhes-cliente');
+const listaPedidosClienteAdm = document.getElementById('lista-pedidos-cliente-adm');
+const listaHistoricoClienteAdm = document.getElementById('lista-historico-cliente-adm');
+
+if (formBuscarCliente) {
+    formBuscarCliente.addEventListener('submit', handleBuscarCliente);
+}
+
+async function handleBuscarCliente(event) {
+    event.preventDefault();
+
+    const buscaValor = document.getElementById('busca-email-telefone').value.trim().toLowerCase();
+    console.log('Valor da busca (trim() e lowercase):', buscaValor);
+
+    if (!buscaValor) {
+        if (resultadosBuscaDiv) {
+            resultadosBuscaDiv.innerHTML = '<p class="mensagem">Por favor, digite um email ou telefone para buscar.</p>';
+        }
+        return;
+    }
+
+    const chaveUsuarios = 'users';
+    const usuariosSalvos = localStorage.getItem(chaveUsuarios);
+    let clienteEncontrado = null;
+
+    if (usuariosSalvos) {
+        try {
+            const usuariosObjeto = JSON.parse(usuariosSalvos);
+            console.log('Dados de usuários parseados:', usuariosObjeto);
+
+            for (const email in usuariosObjeto) {
+                const emailLower = email.trim().toLowerCase();
+                const telefoneLower = (usuariosObjeto[email].phone || '').trim().toLowerCase();
+
+                if (emailLower === buscaValor || telefoneLower === buscaValor) {
+                    clienteEncontrado = {
+                        email: email,
+                        telefone: usuariosObjeto[email].phone,
+                        name: usuariosObjeto[email].name,
+                        suportes: carregarSuportesDoCliente(email),
+                        faleConoscos: carregarFaleConoscosDoCliente(email),
+                        orcamentosCliente: carregarOrcamentosDoCliente(email),
+                        pedidosAtivos: carregarPedidosAtivosDoCliente(email),
+                        historico: carregarHistoricoDoCliente(email)
+                    };
+                    break;
+                }
+            }
+            console.log('Cliente encontrado:', clienteEncontrado);
+
+        } catch (error) {
+            console.error('Erro ao parsear JSON de usuários:', error);
+            if (resultadosBuscaDiv) {
+                resultadosBuscaDiv.innerHTML = '<p class="mensagem">Erro ao carregar dados de usuários.</p>';
+            }
+            return;
+        }
+    } else {
+        if (resultadosBuscaDiv) {
+            resultadosBuscaDiv.innerHTML = '<p class="mensagem">Nenhum usuário cadastrado.</p>';
+        }
+        return;
+    }
+
+    if (clienteEncontrado) {
+        console.log('Cliente encontrado para exibir:', clienteEncontrado);
+        exibirInformacoesCliente(clienteEncontrado);
+    } else {
+        if (resultadosBuscaDiv) {
+            resultadosBuscaDiv.innerHTML = '<p class="mensagem">Nenhum cliente encontrado com este email ou telefone.</p>';
+            if (detalhesClienteDiv) detalhesClienteDiv.innerHTML = '';
+            if (listaPedidosClienteAdm) listaPedidosClienteAdm.innerHTML = '';
+            if (listaHistoricoClienteAdm) listaHistoricoClienteAdm.innerHTML = '';
+        }
+    }
+}
+
+function exibirInformacoesCliente(cliente) {
+    console.log('Função exibirInformacoesCliente foi chamada com:', cliente);
+
+    if (!detalhesClienteDiv || !listaPedidosClienteAdm || !listaHistoricoClienteAdm) {
+        console.error('Elementos do DOM para detalhes do cliente não encontrados.');
+        return;
+    }
+
+    detalhesClienteDiv.innerHTML = `
+        <h3>Detalhes do Cliente</h3>
+        <p><strong>Nome:</strong> ${cliente.name || 'Não informado'}</p>
+        <p><strong>Email:</strong> ${cliente.email || 'Não informado'}</p>
+        <p><strong>Telefone:</strong> ${cliente.telefone || 'Não informado'}</p>
+    `;
+
+    // Limpa as listas
+    listaPedidosClienteAdm.innerHTML = '';
+    listaHistoricoClienteAdm.innerHTML = '';
+
+    // Exibe Pedidos Ativos
+    const pedidosAtivosTitulo = document.createElement('h4');
+    pedidosAtivosTitulo.textContent = 'Pedidos Ativos';
+    listaPedidosClienteAdm.appendChild(pedidosAtivosTitulo);
+
+    if (cliente.pedidosAtivos && cliente.pedidosAtivos.length > 0) {
+        const listaAtivos = document.createElement('ul');
+        cliente.pedidosAtivos.forEach(pedido => {
+            const itemPedido = document.createElement('li');
+            itemPedido.textContent = `ID: ${pedido.id || 'N/A'}, Data: ${pedido.data || 'N/A'}, Status: ${pedido.status || 'N/A'}`; // Adapte
+            listaAtivos.appendChild(itemPedido);
+        });
+        listaPedidosClienteAdm.appendChild(listaAtivos);
+    } else {
+        const mensagemNenhumPedido = document.createElement('p');
+        mensagemNenhumPedido.textContent = 'Nenhum pedido ativo encontrado para este cliente.';
+        listaPedidosClienteAdm.appendChild(mensagemNenhumPedido);
+    }
+
+    // Exibe Histórico de Interações
+    const historicoTitulo = document.createElement('h4');
+    historicoTitulo.textContent = 'Histórico de Interações';
+    listaHistoricoClienteAdm.appendChild(historicoTitulo);
+
+    if (cliente.historico && cliente.historico.length > 0) {
+        const listaHistorico = document.createElement('ul');
+        cliente.historico.forEach(interacao => {
+            const itemHistorico = document.createElement('li');
+            itemHistorico.textContent = `Data: ${interacao.data || 'N/A'}, Tipo: ${interacao.tipo || 'N/A'}, Detalhes: ${interacao.detalhes || 'N/A'}`; // Adapte
+            listaHistorico.appendChild(itemHistorico);
+        });
+        listaHistoricoClienteAdm.appendChild(listaHistorico);
+    } else {
+        const mensagemNenhumHistorico = document.createElement('p');
+        mensagemNenhumHistorico.textContent = 'Nenhum histórico de interações encontrado para este cliente.';
+        listaHistoricoClienteAdm.appendChild(mensagemNenhumHistorico);
+    }
+
+    // Exibe Pedidos de Suporte
+    const suporteTitulo = document.createElement('h4');
+    suporteTitulo.textContent = 'Pedidos de Suporte';
+    detalhesClienteDiv.appendChild(suporteTitulo);
+
+    if (cliente.suportes && cliente.suportes.length > 0) {
+        const listaSuportes = document.createElement('ul');
+        cliente.suportes.forEach(suporte => {
+            const itemSuporte = document.createElement('li');
+            itemSuporte.textContent = `ID: ${suporte.id || 'N/A'}, Problema: ${suporte.problema || 'N/A'}, Enviado em: ${suporte.dataEnvio || 'N/A'}`; // Adapte
+            listaSuportes.appendChild(itemSuporte);
+        });
+        detalhesClienteDiv.appendChild(listaSuportes);
+    } else {
+        const mensagemNenhumSuporte = document.createElement('p');
+        mensagemNenhumSuporte.textContent = 'Nenhum pedido de suporte encontrado para este cliente.';
+        detalhesClienteDiv.appendChild(mensagemNenhumSuporte);
+    }
+
+    // Exibe Mensagens Fale Conosco
+    const faleConoscoTitulo = document.createElement('h4');
+    faleConoscoTitulo.textContent = 'Mensagens Fale Conosco';
+    detalhesClienteDiv.appendChild(faleConoscoTitulo);
+
+    if (cliente.faleConoscos && cliente.faleConoscos.length > 0) {
+        const listaFaleConosco = document.createElement('ul');
+        cliente.faleConoscos.forEach(mensagem => {
+            const itemMensagem = document.createElement('li');
+            itemMensagem.textContent = `Assunto: ${mensagem.assunto || 'N/A'}, Enviado em: ${mensagem.dataEnvio || 'N/A'}`; // Adapte
+            listaFaleConosco.appendChild(itemMensagem);
+        });
+        detalhesClienteDiv.appendChild(listaFaleConosco);
+    } else {
+        const mensagemNenhumFaleConosco = document.createElement('p');
+        mensagemNenhumFaleConosco.textContent = 'Nenhuma mensagem Fale Conosco encontrada para este cliente.';
+        detalhesClienteDiv.appendChild(mensagemNenhumFaleConosco);
+    }
+
+    // Exibe Orçamentos
+    const orcamentosTitulo = document.createElement('h4');
+    orcamentosTitulo.textContent = 'Orçamentos';
+    detalhesClienteDiv.appendChild(orcamentosTitulo);
+
+    if (cliente.orcamentosCliente && cliente.orcamentosCliente.length > 0) {
+        const listaOrcamentos = document.createElement('ul');
+        cliente.orcamentosCliente.forEach(orcamento => {
+            const itemOrcamento = document.createElement('li');
+            itemOrcamento.textContent = `Serviço: ${orcamento.servico || 'N/A'}, Enviado em: ${orcamento.dataEnvio || 'N/A'}`; // Adapte
+            listaOrcamentos.appendChild(itemOrcamento);
+        });
+        detalhesClienteDiv.appendChild(listaOrcamentos);
+    } else {
+        const mensagemNenhumOrcamento = document.createElement('p');
+        mensagemNenhumOrcamento.textContent = 'Nenhum orçamento encontrado para este cliente.';
+        detalhesClienteDiv.appendChild(mensagemNenhumOrcamento);
+    }
+}
+
+// Funções auxiliares para carregar os dados relacionados (implemente estas funções)
+function carregarSuportesDoCliente(emailCliente) {
+    const todosSuportes = localStorage.getItem('pedidosSuporte');
+    return todosSuportes ? JSON.parse(todosSuportes).filter(suporte => suporte.email && suporte.email.trim().toLowerCase() === emailCliente.trim().toLowerCase()) : [];
+}
+
+function carregarFaleConoscosDoCliente(emailCliente) {
+    const todasMensagens = localStorage.getItem('mensagensFaleConosco');
+    return todasMensagens ? JSON.parse(todasMensagens).filter(mensagem => mensagem.email && mensagem.email.trim().toLowerCase() === emailCliente.trim().toLowerCase()) : [];
+}
+
+function carregarOrcamentosDoCliente(emailCliente) {
+    const todosOrcamentos = localStorage.getItem('orcamentos');
+    return todosOrcamentos ? JSON.parse(todosOrcamentos).filter(orcamento => orcamento.email && orcamento.email.trim().toLowerCase() === emailCliente.trim().toLowerCase()) : [];
+}
+
+// Implemente estas funções para carregar os dados de pedidos ativos e histórico
+function carregarPedidosAtivosDoCliente(emailCliente) {
+    const todosPedidos = localStorage.getItem('pedidos'); // *** ADAPTE A CHAVE SE NECESSÁRIO ***
+    return todosPedidos ? JSON.parse(todosPedidos).filter(pedido => pedido.clienteEmail && pedido.clienteEmail.trim().toLowerCase() === emailCliente.trim().toLowerCase() && pedido.status !== 'Entregue' && pedido.status !== 'Concluído') : [];
+}
+
+function carregarHistoricoDoCliente(emailCliente) {
+    const todoHistorico = localStorage.getItem('historicoPedidos'); // *** ADAPTE A CHAVE SE NECESSÁRIO ***
+    return todoHistorico ? JSON.parse(todoHistorico).filter(historico => historico.clienteEmail && historico.clienteEmail.trim().toLowerCase() === emailCliente.trim().toLowerCase()) : [];
+}
+
 
 // Funções para renderizar dados na página
 function renderAdminList() {

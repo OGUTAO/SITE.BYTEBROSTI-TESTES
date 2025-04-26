@@ -39,6 +39,7 @@
                 // Login bem-sucedido (simulado)
                 localStorage.setItem('userLoggedIn', 'true');
                 localStorage.setItem('loggedInUserEmail', email); // Salva o email do usuário logado
+                console.log("LOGIN: Email armazenado:", localStorage.getItem('loggedInUserEmail'));
                 window.location.href = 'index.html';
             } else {
                 // Credenciais inválidas

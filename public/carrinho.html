@@ -31,6 +31,7 @@
                 <label for="cep-destino">CEP de Destino:</label>
                 <input type="text" id="cep-destino" placeholder="Digite seu CEP" maxlength="9">
                 <button class="button calcular-frete-button">Calcular Frete</button>
+                
             </div>
 
             <div class="tipo-frete">
@@ -40,10 +41,15 @@
                     <option value="expresso">Expresso</option>
                 </select>
             </div>
+            <p class="cep-origem-info">Enviamos de: <strong>CEP 71215-100</strong> (Brasília, DF)</p>
 
             <div class="frete">
                 <span>Frete:</span>
                 <span class="valor-frete">A calcular</span>
+            </div>
+            <div class="prazo-entrega">
+                <span>Prazo de Entrega:</span>
+                <span class="valor-prazo">A calcular</span>
             </div>
             <div class="total">
                 <span>Total:</span>
@@ -56,16 +62,17 @@
             <button class="button checkout-button" onclick="window.location.href='pagamento.html'" disabled>
                 <i class="fas fa-check"></i> Finalizar Compra
             </button>
-            <p class="observacao-checkout">Para finalizar a compra, adicione itens ao carrinho.</p>
+            <p class="observacao-checkout">Para finalizar a compra, adicione itens ao carrinho e calcule o frete.</p>
         </section>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // Seletores
+            // Seletores (mantidos)
             const itensCarrinhoLista = document.querySelector('.itens-carrinho');
             const valorSubtotalElement = document.querySelector('.valor-subtotal');
             const valorFreteElement = document.querySelector('.valor-frete');
+            const valorPrazoElement = document.querySelector('.valor-prazo');
             const valorTotalElement = document.querySelector('.valor-total');
             const botaoCheckout = document.querySelector('.checkout-button');
             const observacaoCheckout = document.querySelector('.observacao-checkout');
@@ -75,12 +82,12 @@
             const tipoFreteSelect = document.getElementById('tipo-frete');
             const enderecoInput = document.getElementById('endereco-input');
 
-            // CEP de origem
+            // CEP de origem (mantido)
             const cepOrigem = '71215-100';
             let freteCalculado = 0;
             let freteFoiCalculado = false;
+            let prazoEntregaSimulado = 'A calcular';
 
-            // Importante: utilize a mesma chave "cart" usada na loja
             let carrinho = JSON.parse(localStorage.getItem('cart')) || [];
 
             function salvarCarrinho() {
@@ -88,6 +95,7 @@
             }
 
             function renderizarCarrinho() {
+                // (Função renderizarCarrinho mantida sem alterações significativas)
                 itensCarrinhoLista.innerHTML = '';
 
                 if (carrinho.length === 0) {
@@ -126,7 +134,6 @@
                         `;
                         itensCarrinhoLista.appendChild(li);
 
-                        // Eventos para alterar quantidade e remover item
                         li.querySelector('.menos').addEventListener('click', () => alterarQuantidade(item.id, -1));
                         li.querySelector('.mais').addEventListener('click', () => alterarQuantidade(item.id, 1));
                         li.querySelector('.input-quantidade').addEventListener('change', (e) => {
@@ -173,8 +180,10 @@
                 if (!cepDestino || cepDestino.length !== 9) {
                     alert('Por favor, digite um CEP válido.');
                     valorFreteElement.textContent = 'A calcular';
+                    valorPrazoElement.textContent = 'A calcular';
                     freteCalculado = 0;
                     freteFoiCalculado = false;
+                    prazoEntregaSimulado = 'A calcular';
                     atualizarTotal();
                     atualizarBotaoCheckout();
                     return;
@@ -182,29 +191,47 @@
 
                 const primeirosDigitosDestino = cepDestino.substring(0, 2);
                 let custoBase = 0;
+                let prazoBaseDias = 0;
                 const tipoFrete = tipoFreteSelect.value;
-                const fatorExpresso = tipoFrete === 'expresso' ? 1.5 : 1; // Frete expresso pode ser 50% mais caro
+                const fatorExpresso = tipoFrete === 'expresso' ? 1.5 : 1;
+                const fatorPrazoExpresso = tipoFrete === 'expresso' ? 0.7 : 1; // Reduz o prazo para expresso
 
-                // Simulação de custo base por "região" (baseado nos 2 primeiros dígitos do CEP)
-                if (primeirosDigitosDestino >= 0 && primeirosDigitosDestino <= 19) { // Região 1 (mais próxima?)
+                // Simulação de custo base e prazo base por "região"
+                if (primeirosDigitosDestino >= 0 && primeirosDigitosDestino <= 19) { // Região 1
                     custoBase = 10.00;
+                    prazoBaseDias = 3;
                 } else if (primeirosDigitosDestino >= 20 && primeirosDigitosDestino <= 39) { // Região 2
                     custoBase = 15.00;
+                    prazoBaseDias = 5;
                 } else if (primeirosDigitosDestino >= 40 && primeirosDigitosDestino <= 59) { // Região 3
                     custoBase = 20.00;
+                    prazoBaseDias = 7;
                 } else if (primeirosDigitosDestino >= 60 && primeirosDigitosDestino <= 79) { // Região 4
                     custoBase = 25.00;
-                } else { // Região 5 (mais distante?)
+                    prazoBaseDias = 9;
+                } else { // Região 5
                     custoBase = 30.00;
+                    prazoBaseDias = 12;
                 }
 
                 const custoFinalFrete = typeof custoBase === 'number' ? custoBase * fatorExpresso : custoBase;
+                const prazoFinalDias = Math.ceil(prazoBaseDias * fatorPrazoExpresso);
+                const dataEntrega = new Date();
+                dataEntrega.setDate(dataEntrega.getDate() + prazoFinalDias);
+                const dia = dataEntrega.getDate().toString().padStart(2, '0');
+                const mes = (dataEntrega.getMonth() + 1).toString().padStart(2, '0');
+                const ano = dataEntrega.getFullYear();
+                prazoEntregaSimulado = `${dia}/${mes}/${ano}`;
 
                 valorFreteElement.textContent = typeof custoFinalFrete === 'number' ? `R$ ${custoFinalFrete.toFixed(2)}` : custoFinalFrete;
+                valorPrazoElement.textContent = prazoEntregaSimulado;
                 freteCalculado = typeof custoFinalFrete === 'number' ? custoFinalFrete : 0;
                 freteFoiCalculado = true;
                 atualizarTotal();
                 atualizarBotaoCheckout();
+
+                localStorage.setItem('valorFreteCalculado', typeof custoFinalFrete === 'number' ? custoFinalFrete.toFixed(2) : '0.00');
+                localStorage.setItem('tipoFreteSelecionado', tipoFreteSelect.value);
             }
 
             function atualizarResumo() {
@@ -245,36 +272,33 @@
                 atualizarBotaoCheckout();
             });
 
-            // Evento para calcular o frete ao clicar no botão
             calcularFreteButton.addEventListener('click', () => {
                 calcularFrete(cepDestinoInput.value);
             });
 
-            // Evento para calcular o frete ao mudar o tipo de frete (se o CEP já foi digitado)
             tipoFreteSelect.addEventListener('change', () => {
                 if (cepDestinoInput.value) {
                     calcularFrete(cepDestinoInput.value);
                 } else {
                     valorFreteElement.textContent = 'A calcular';
+                    valorPrazoElement.textContent = 'A calcular';
                     freteCalculado = 0;
                     freteFoiCalculado = false;
+                    prazoEntregaSimulado = 'A calcular';
                     atualizarTotal();
                     atualizarBotaoCheckout();
                 }
             });
 
-            // Calcular frete inicial se houver um CEP salvo
             if (localStorage.getItem('cepDestino')) {
                 cepDestinoInput.value = localStorage.getItem('cepDestino');
                 calcularFrete(cepDestinoInput.value);
             }
 
-            // Salvar o CEP digitado no localStorage
             cepDestinoInput.addEventListener('input', () => {
                 localStorage.setItem('cepDestino', cepDestinoInput.value);
             });
 
-            // Atualizar o botão de checkout inicialmente
             atualizarBotaoCheckout();
         });
     </script>

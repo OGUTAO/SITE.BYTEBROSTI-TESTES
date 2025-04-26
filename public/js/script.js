@@ -126,10 +126,12 @@ function checkLoginStatusOnLoad() {
     }
 }
 
+
 // Função a ser chamada após o login bem-sucedido
-function handleLoginSuccess(userName) {
+function handleLoginSuccess(userName, userEmail) {
     localStorage.setItem('userName', userName);
     localStorage.setItem('userLoggedIn', 'true');
+    localStorage.setItem('loggedInUserEmail', userEmail); // Salva o email do cliente
     window.location.href = 'index.html'; // Redireciona para a página principal
 }
 
@@ -145,7 +147,7 @@ function validateLogin() {
 
     if (users[email] && users[email].password === password) {
         // Login bem-sucedido
-        handleLoginSuccess(users[email].name); // Armazena o nome do usuário
+        handleLoginSuccess(users[email].name, email); // Passa o email para handleLoginSuccess
     } else {
         // Credenciais inválidas
         errorElement.textContent = 'Email ou senha incorretos.';

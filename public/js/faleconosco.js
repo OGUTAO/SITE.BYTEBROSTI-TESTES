@@ -7,17 +7,27 @@ document.addEventListener('DOMContentLoaded', () => {
         const nome = document.getElementById('nome').value;
         const email = document.getElementById('email').value;
         const mensagem = document.getElementById('mensagem').value;
+        const tipo = 'Contato'; // Adicionando o tipo
         const assunto = 'Mensagem do Fale Conosco'; // Assunto padrão
-        const dataEnvio = new Date().toLocaleString();
+        const dataEnvio = new Date().toLocaleDateString();
 
-        const novaMensagem = { nome, email, assunto, mensagem, dataEnvio };
+        const novaMensagem = { nome, email, assunto, mensagem, dataEnvio, tipo }; // Adicionando 'tipo' ao objeto
 
-        let mensagensFaleConosco = localStorage.getItem('mensagensFaleConosco');
-        mensagensFaleConosco = mensagensFaleConosco ? JSON.parse(mensagensFaleConosco) : [];
-        mensagensFaleConosco.push(novaMensagem);
-        localStorage.setItem('mensagensFaleConosco', JSON.stringify(mensagensFaleConosco));
+        const clienteEmailLogado = localStorage.getItem('loggedInUserEmail');
 
-        alert('Mensagem enviada com sucesso!');
-        faleConoscoForm.reset(); // Limpa o formulário
+        if (clienteEmailLogado) {
+            const chaveHistoricoCliente = `historico_${clienteEmailLogado.replace(/[^a-zA-Z0-9]/g, '')}`;
+            const historicoExistente = JSON.parse(localStorage.getItem(chaveHistoricoCliente)) || [];
+
+            historicoExistente.push(novaMensagem);
+            localStorage.setItem(chaveHistoricoCliente, JSON.stringify(historicoExistente));
+
+            alert('Mensagem enviada com sucesso!');
+            faleConoscoForm.reset(); // Limpa o formulário
+        } else {
+            alert('Você precisa estar logado para enviar uma mensagem de contato.');
+            // Opcional: Redirecionar para a página de login
+            // window.location.href = 'login.html';
+        }
     });
 });
