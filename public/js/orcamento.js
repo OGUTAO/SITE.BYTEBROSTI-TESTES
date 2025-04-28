@@ -45,17 +45,33 @@ document.addEventListener('DOMContentLoaded', () => {
             const descricao = document.getElementById('descricao').value;
             const dataEnvio = new Date().toLocaleString();
             const servicoSolicitado = servico ? getServicoNome(servico) : 'Não especificado';
+            const tipo = 'Orcamento'; // Adicionando o tipo
 
-            const novoOrcamento = { nome, email, telefone, descricao, dataEnvio, servico: servicoSolicitado };
+            const novoOrcamento = { nome, email, telefone, descricao, dataEnvio, servico: servicoSolicitado, tipo }; // Incluindo o tipo
 
-            let orcamentos = localStorage.getItem('orcamentos');
-            orcamentos = orcamentos ? JSON.parse(orcamentos) : [];
-            orcamentos.push(novoOrcamento);
-            localStorage.setItem('orcamentos', JSON.stringify(orcamentos));
+            const clienteEmailLogado = localStorage.getItem('loggedInUserEmail');
 
-            alert('Orçamento enviado com sucesso!');
-            orcamentoForm.reset(); // Limpa o formulário
-            window.location.href = 'orcamento-enviado.html'; // Redireciona para a página de confirmação
+            if (clienteEmailLogado) {
+                const chaveHistoricoCliente = `historico_${clienteEmailLogado.replace(/[^a-zA-Z0-9]/g, '')}`;
+                const historicoExistente = JSON.parse(localStorage.getItem(chaveHistoricoCliente)) || [];
+
+                historicoExistente.push(novoOrcamento);
+                localStorage.setItem(chaveHistoricoCliente, JSON.stringify(historicoExistente));
+
+                // --- Adicionando lógica para salvar na chave geral 'orcamentos' ---
+                let orcamentosGeral = localStorage.getItem('orcamentos');
+                orcamentosGeral = orcamentosGeral ? JSON.parse(orcamentosGeral) : [];
+                orcamentosGeral.push(novoOrcamento);
+                localStorage.setItem('orcamentos', JSON.stringify(orcamentosGeral));
+
+                alert('Orçamento enviado com sucesso!');
+                orcamentoForm.reset(); // Limpa o formulário
+                window.location.href = 'orcamento-enviado.html'; // Redireciona para a página de confirmação
+            } else {
+                alert('Você precisa estar logado para solicitar um orçamento.');
+                // Opcional: Redirecionar para a página de login
+                // window.location.href = 'login.html';
+            }
         });
     }
 });

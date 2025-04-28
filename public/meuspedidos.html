@@ -69,9 +69,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Combine o histórico de pedidos da loja com as outras solicitações (orçamentos, etc.) e ordene por data
         const historicoUnificado = [...historicoPedidosLoja, ...todasSolicitacoes].sort((a, b) => {
-            // Usa a data do pedido da loja (dataPedido) ou a data genérica (data)
-            const dateA = new Date(a.dataPedido || a.data);
-            const dateB = new Date(b.dataPedido || b.data);
+            // Usa a data do pedido da loja (dataPedido) ou a data genérica (dataEnvio)
+            const dateA = new Date(a.dataPedido || a.dataEnvio);
+            const dateB = new Date(b.dataPedido || b.dataEnvio);
             return dateB - dateA; // Ordena do mais recente para o mais antigo
         });
 
@@ -146,11 +146,19 @@ document.addEventListener("DOMContentLoaded", () => {
                             `;
                         // Poderia adicionar um botão de detalhes aqui se quisesse, buscando em 'itens'
 
-                    } else if (item.tipo === 'Serviço') { // Trata Orçamento/Serviço
-                        detalhes = `<strong>Serviço #${item.id || 'N/A'}</strong> - Data: ${item.data || item.dataEnvio || 'N/A'}<br>`;
-                        detalhes += `Serviço: ${item.servico || 'N/A'}<br>Descrição: ${item.descricao || 'N/A'}<br>Status: ${item.status || 'Pendente'}<br>Valor: ${item.valor || 'N/A'}`;
-                        if (item.contato) {
-                            detalhes += `<br>Contato: Nome: ${item.contato.nome || 'N/A'}, Email: ${item.contato.email || 'N/A'}, Telefone: ${item.contato.telefone || 'N/A'}`;
+                    } else if (item.tipo === 'Orcamento') { // Trata Orçamento
+                        detalhes = `<strong>Orçamento</strong> - Data: ${item.dataEnvio || 'N/A'}<br>`;
+                        detalhes += `Serviço Solicitado: ${item.servico || 'N/A'}<br>`;
+                        detalhes += `Descrição: ${item.descricao || 'N/A'}<br>`;
+                        detalhes += `Status: Pendente`; // Status padrão para orçamento
+                        if (item.nome) {
+                            detalhes += `<br>Nome: ${item.nome || 'N/A'}`;
+                        }
+                        if (item.email) {
+                            detalhes += `<br>Email: ${item.email || 'N/A'}`;
+                        }
+                        if (item.telefone) {
+                            detalhes += `<br>Telefone: ${item.telefone || 'N/A'}`;
                         }
                     } else if (item.tipo === 'Suporte') { // Trata Suporte
                         detalhes = `<strong>Suporte</strong> - Data: ${item.dataEnvio || 'N/A'}<br>`;

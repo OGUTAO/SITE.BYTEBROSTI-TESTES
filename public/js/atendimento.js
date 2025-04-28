@@ -23,6 +23,11 @@ document.addEventListener('DOMContentLoaded', () => {
             historicoExistente.push(novoPedidoSuporte);
             localStorage.setItem(chaveHistoricoCliente, JSON.stringify(historicoExistente));
 
+            // Salva o pedido de suporte na lista geral para o admin
+            let pedidosSuporteAdmin = JSON.parse(localStorage.getItem('pedidosSuporte')) || [];
+            pedidosSuporteAdmin.push(novoPedidoSuporte);
+            localStorage.setItem('pedidosSuporte', JSON.stringify(pedidosSuporteAdmin));
+
             alert('Pedido de suporte enviado com sucesso!');
             atendimentoForm.reset(); // Limpa o formulário
         } else {

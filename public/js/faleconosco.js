@@ -22,6 +22,11 @@ document.addEventListener('DOMContentLoaded', () => {
             historicoExistente.push(novaMensagem);
             localStorage.setItem(chaveHistoricoCliente, JSON.stringify(historicoExistente));
 
+            // Salva a mensagem na lista geral para o admin
+            let mensagensFaleConoscoAdmin = JSON.parse(localStorage.getItem('mensagensFaleConosco')) || [];
+            mensagensFaleConoscoAdmin.push(novaMensagem);
+            localStorage.setItem('mensagensFaleConosco', JSON.stringify(mensagensFaleConoscoAdmin));
+
             alert('Mensagem enviada com sucesso!');
             faleConoscoForm.reset(); // Limpa o formulário
         } else {

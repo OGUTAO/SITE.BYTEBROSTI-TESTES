@@ -187,6 +187,7 @@ function switchTab(tabName) {
     const contents = [productsContent, addProductContent, addNewsContent, adminsContent, budgetsContent, supportRequestsContent, contactUsContent, popularProductsContent, newProductsContent, offersContent, clientContent];
     const tabAdminsButton = document.getElementById('tab-admins');
     const adminsContentDiv = document.getElementById('admins-content');
+    const clientsContentDiv = document.getElementById('clients-content'); // Obtém a div de clientes
 
     tabs.forEach(tab => {
         if (tab) tab.classList.remove('active');
@@ -195,6 +196,11 @@ function switchTab(tabName) {
     contents.forEach(content => {
         if (content) content.classList.remove('active');
     });
+
+    // Esconde a seção de clientes por padrão
+    if (clientsContentDiv) {
+        clientsContentDiv.style.display = 'none';
+    }
 
     if (tabName === 'products' && tabProducts && productsContent) {
         tabProducts.classList.add('active');
@@ -253,9 +259,10 @@ function switchTab(tabName) {
         offersContent.classList.add('active');
         renderOffersAdminList();
         if (adminsContentDiv) adminsContentDiv.style.display = 'none';
-    } else if (tabName === 'clients' && tabClients && clientContent) {
+    } else if (tabName === 'clients' && tabClients && clientContent && clientsContentDiv) {
         tabClients.classList.add('active');
         clientContent.classList.add('active');
+        clientsContentDiv.style.display = 'block'; // Mostra a div de clientes
         if (adminsContentDiv) adminsContentDiv.style.display = 'none';
     }
 
@@ -284,9 +291,9 @@ window.addEventListener('load', () => {
         if (adminContentElement) {
             adminContentElement.style.display = 'block';
         }
-        renderPopularProductsAdmin(); 
-        renderNewProductsAdminList(); 
-        renderOffersAdminList();    
+        renderPopularProductsAdmin();
+        renderNewProductsAdminList();
+        renderOffersAdminList();
 
     } else {
         if (loginSectionElement) {
@@ -376,7 +383,7 @@ async function handleBuscarCliente(event) {
                         faleConoscos: carregarFaleConoscosDoCliente(email),
                         orcamentosCliente: carregarOrcamentosDoCliente(email),
                         pedidosAtivos: carregarPedidosAtivosDoCliente(email),
-                        historico: carregarHistoricoDoCliente(email)
+                        historicoPedidosLoja: carregarHistoricoPedidosLojaDoCliente(email) // Renomeado para clareza
                     };
                     break;
                 }
@@ -429,7 +436,7 @@ function exibirInformacoesCliente(cliente) {
     listaPedidosClienteAdm.innerHTML = '';
     listaHistoricoClienteAdm.innerHTML = '';
 
-    // Exibe Pedidos Ativos
+    // Exibe Pedidos Ativos (da loja)
     const pedidosAtivosTitulo = document.createElement('h4');
     pedidosAtivosTitulo.textContent = 'Pedidos Ativos';
     listaPedidosClienteAdm.appendChild(pedidosAtivosTitulo);
@@ -438,7 +445,7 @@ function exibirInformacoesCliente(cliente) {
         const listaAtivos = document.createElement('ul');
         cliente.pedidosAtivos.forEach(pedido => {
             const itemPedido = document.createElement('li');
-            itemPedido.textContent = `ID: ${pedido.id || 'N/A'}, Data: ${pedido.data || 'N/A'}, Status: ${pedido.status || 'N/A'}`; // Adapte
+            itemPedido.textContent = `ID: ${pedido.id || 'N/A'}, Data: ${pedido.dataPedido || 'N/A'}, Status: ${pedido.status || 'N/A'}`; // Use dataPedido
             listaAtivos.appendChild(itemPedido);
         });
         listaPedidosClienteAdm.appendChild(listaAtivos);
@@ -448,84 +455,64 @@ function exibirInformacoesCliente(cliente) {
         listaPedidosClienteAdm.appendChild(mensagemNenhumPedido);
     }
 
-    // Exibe Histórico de Interações
+    // Exibe Histórico de Pedidos (da loja) e Outras Interações
     const historicoTitulo = document.createElement('h4');
-    historicoTitulo.textContent = 'Histórico de Interações';
+    historicoTitulo.textContent = 'Histórico de Pedidos e Interações';
     listaHistoricoClienteAdm.appendChild(historicoTitulo);
 
-    if (cliente.historico && cliente.historico.length > 0) {
-        const listaHistorico = document.createElement('ul');
-        cliente.historico.forEach(interacao => {
-            const itemHistorico = document.createElement('li');
-            itemHistorico.textContent = `Data: ${interacao.data || 'N/A'}, Tipo: ${interacao.tipo || 'N/A'}, Detalhes: ${interacao.detalhes || 'N/A'}`; // Adapte
-            listaHistorico.appendChild(itemHistorico);
+    const listaHistorico = document.createElement('ul');
+    let hasHistorico = false;
+
+    // Adiciona histórico de pedidos da loja
+    if (cliente.historicoPedidosLoja && cliente.historicoPedidosLoja.length > 0) {
+        cliente.historicoPedidosLoja.forEach(pedido => {
+            const itemHistoricoPedido = document.createElement('li');
+            itemHistoricoPedido.textContent = `Tipo: Pedido Loja, ID: ${pedido.id || 'N/A'}, Data: ${pedido.dataPedido || 'N/A'}, Status: ${pedido.status || 'N/A'}`; // Use dataPedido
+            listaHistorico.appendChild(itemHistoricoPedido);
         });
+        hasHistorico = true;
+    }
+
+    // Adiciona pedidos de suporte ao histórico
+    if (cliente.suportes && cliente.suportes.length > 0) {
+        cliente.suportes.forEach(suporte => {
+            const itemSuporte = document.createElement('li');
+            itemSuporte.textContent = `Tipo: Suporte, ID: ${suporte.id || 'N/A'}, Problema: ${suporte.problema || 'N/A'}, Enviado em: ${suporte.dataEnvio || 'N/A'}`;
+            listaHistorico.appendChild(itemSuporte);
+        });
+        hasHistorico = true;
+    }
+
+    // Adiciona mensagens Fale Conosco ao histórico
+    if (cliente.faleConoscos && cliente.faleConoscos.length > 0) {
+        cliente.faleConoscos.forEach(mensagem => {
+            const itemMensagem = document.createElement('li');
+            itemMensagem.textContent = `Tipo: Fale Conosco, Assunto: ${mensagem.assunto || 'N/A'}, Enviado em: ${mensagem.dataEnvio || 'N/A'}`;
+            listaHistorico.appendChild(itemMensagem);
+        });
+        hasHistorico = true;
+    }
+
+    // Adiciona orçamentos ao histórico
+    if (cliente.orcamentosCliente && cliente.orcamentosCliente.length > 0) {
+        cliente.orcamentosCliente.forEach(orcamento => {
+            const itemOrcamento = document.createElement('li');
+            itemOrcamento.textContent = `Tipo: Orçamento, Serviço: ${orcamento.servico || 'N/A'}, Enviado em: ${orcamento.dataEnvio || 'N/A'}`;
+            listaHistorico.appendChild(itemOrcamento);
+        });
+        hasHistorico = true;
+    }
+
+    if (hasHistorico) {
         listaHistoricoClienteAdm.appendChild(listaHistorico);
     } else {
         const mensagemNenhumHistorico = document.createElement('p');
-        mensagemNenhumHistorico.textContent = 'Nenhum histórico de interações encontrado para este cliente.';
+        mensagemNenhumHistorico.textContent = 'Nenhum histórico de pedidos ou interações encontrado para este cliente.';
         listaHistoricoClienteAdm.appendChild(mensagemNenhumHistorico);
-    }
-
-    // Exibe Pedidos de Suporte
-    const suporteTitulo = document.createElement('h4');
-    suporteTitulo.textContent = 'Pedidos de Suporte';
-    detalhesClienteDiv.appendChild(suporteTitulo);
-
-    if (cliente.suportes && cliente.suportes.length > 0) {
-        const listaSuportes = document.createElement('ul');
-        cliente.suportes.forEach(suporte => {
-            const itemSuporte = document.createElement('li');
-            itemSuporte.textContent = `ID: ${suporte.id || 'N/A'}, Problema: ${suporte.problema || 'N/A'}, Enviado em: ${suporte.dataEnvio || 'N/A'}`; // Adapte
-            listaSuportes.appendChild(itemSuporte);
-        });
-        detalhesClienteDiv.appendChild(listaSuportes);
-    } else {
-        const mensagemNenhumSuporte = document.createElement('p');
-        mensagemNenhumSuporte.textContent = 'Nenhum pedido de suporte encontrado para este cliente.';
-        detalhesClienteDiv.appendChild(mensagemNenhumSuporte);
-    }
-
-    // Exibe Mensagens Fale Conosco
-    const faleConoscoTitulo = document.createElement('h4');
-    faleConoscoTitulo.textContent = 'Mensagens Fale Conosco';
-    detalhesClienteDiv.appendChild(faleConoscoTitulo);
-
-    if (cliente.faleConoscos && cliente.faleConoscos.length > 0) {
-        const listaFaleConosco = document.createElement('ul');
-        cliente.faleConoscos.forEach(mensagem => {
-            const itemMensagem = document.createElement('li');
-            itemMensagem.textContent = `Assunto: ${mensagem.assunto || 'N/A'}, Enviado em: ${mensagem.dataEnvio || 'N/A'}`; // Adapte
-            listaFaleConosco.appendChild(itemMensagem);
-        });
-        detalhesClienteDiv.appendChild(listaFaleConosco);
-    } else {
-        const mensagemNenhumFaleConosco = document.createElement('p');
-        mensagemNenhumFaleConosco.textContent = 'Nenhuma mensagem Fale Conosco encontrada para este cliente.';
-        detalhesClienteDiv.appendChild(mensagemNenhumFaleConosco);
-    }
-
-    // Exibe Orçamentos
-    const orcamentosTitulo = document.createElement('h4');
-    orcamentosTitulo.textContent = 'Orçamentos';
-    detalhesClienteDiv.appendChild(orcamentosTitulo);
-
-    if (cliente.orcamentosCliente && cliente.orcamentosCliente.length > 0) {
-        const listaOrcamentos = document.createElement('ul');
-        cliente.orcamentosCliente.forEach(orcamento => {
-            const itemOrcamento = document.createElement('li');
-            itemOrcamento.textContent = `Serviço: ${orcamento.servico || 'N/A'}, Enviado em: ${orcamento.dataEnvio || 'N/A'}`; // Adapte
-            listaOrcamentos.appendChild(itemOrcamento);
-        });
-        detalhesClienteDiv.appendChild(listaOrcamentos);
-    } else {
-        const mensagemNenhumOrcamento = document.createElement('p');
-        mensagemNenhumOrcamento.textContent = 'Nenhum orçamento encontrado para este cliente.';
-        detalhesClienteDiv.appendChild(mensagemNenhumOrcamento);
     }
 }
 
-// Funções auxiliares para carregar os dados relacionados (implemente estas funções)
+// Funções auxiliares para carregar os dados relacionados
 function carregarSuportesDoCliente(emailCliente) {
     const todosSuportes = localStorage.getItem('pedidosSuporte');
     return todosSuportes ? JSON.parse(todosSuportes).filter(suporte => suporte.email && suporte.email.trim().toLowerCase() === emailCliente.trim().toLowerCase()) : [];
@@ -541,15 +528,17 @@ function carregarOrcamentosDoCliente(emailCliente) {
     return todosOrcamentos ? JSON.parse(todosOrcamentos).filter(orcamento => orcamento.email && orcamento.email.trim().toLowerCase() === emailCliente.trim().toLowerCase()) : [];
 }
 
-// Implemente estas funções para carregar os dados de pedidos ativos e histórico
+// Implemente estas funções para carregar os dados de pedidos ativos e histórico DA LOJA
 function carregarPedidosAtivosDoCliente(emailCliente) {
-    const todosPedidos = localStorage.getItem('pedidos'); // *** ADAPTE A CHAVE SE NECESSÁRIO ***
-    return todosPedidos ? JSON.parse(todosPedidos).filter(pedido => pedido.clienteEmail && pedido.clienteEmail.trim().toLowerCase() === emailCliente.trim().toLowerCase() && pedido.status !== 'Entregue' && pedido.status !== 'Concluído') : [];
+    const chavePedidosCliente = `pedidos_${emailCliente.replace(/[^a-zA-Z0-9]/g, '')}`;
+    const todosPedidos = localStorage.getItem(chavePedidosCliente);
+    return todosPedidos ? JSON.parse(todosPedidos).filter(pedido => pedido.status !== 'Entregue' && pedido.status !== 'Concluído') : [];
 }
 
-function carregarHistoricoDoCliente(emailCliente) {
-    const todoHistorico = localStorage.getItem('historicoPedidos'); // *** ADAPTE A CHAVE SE NECESSÁRIO ***
-    return todoHistorico ? JSON.parse(todoHistorico).filter(historico => historico.clienteEmail && historico.clienteEmail.trim().toLowerCase() === emailCliente.trim().toLowerCase()) : [];
+function carregarHistoricoPedidosLojaDoCliente(emailCliente) {
+    const chavePedidosCliente = `pedidos_${emailCliente.replace(/[^a-zA-Z0-9]/g, '')}`;
+    const todosPedidos = localStorage.getItem(chavePedidosCliente);
+    return todosPedidos ? JSON.parse(todosPedidos).filter(pedido => pedido.status === 'Entregue' || pedido.status === 'Concluído' || pedido.status === 'Pago') : [];
 }
 
 
@@ -1093,6 +1082,11 @@ function renderMensagensFaleConosco() {
         listaMensagens.appendChild(item);
     });
     contactUsContent.appendChild(listaMensagens);
+}
+
+function loadMensagensFaleConosco() {
+    const storedMensagens = localStorage.getItem('mensagensFaleConosco');
+    return storedMensagens ? JSON.parse(storedMensagens) : [];
 }
 
 window.atualizarStatusMensagem = function(checkbox) {

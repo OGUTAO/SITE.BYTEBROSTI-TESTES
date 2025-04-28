@@ -688,24 +688,6 @@ body.dark-theme .edit-news-form textarea {
     margin-right: 4px;
 }
 
-/* Rodapé */
-.footer {
-    margin-top: 30px;
-    padding-top: 20px;
-    border-top: 1px solid #ddd;
-    text-align: center;
-    font-size: 14px;
-
-}
-
-.footer a {
-    text-decoration: none;
-}
-
-body.dark-theme .footer {
-    border-top-color: #444;
-}
-
 /* Estilos para as Listas de Produtos em Destaque no Admin */
 #popular-products-content ul#popular-products-checkbox-list,
 #new-products-content ul#new-products-checkbox-list,
@@ -887,6 +869,25 @@ body.dark-theme #lista-historico-cliente-adm {
     color: #f5f5f5;
 }
 
+/* Rodapé */
+.footer {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #ddd;
+    text-align: center;
+    font-size: 14px;
+    /* Remove qualquer posicionamento fixo ou sticky que possa estar ativo */
+    position: static !important;
+}
+
+.footer a {
+    text-decoration: none;
+}
+
+body.dark-theme .footer {
+    border-top-color: #444;
+}
+
 /* Ajuste para o posicionamento dos botões Menu e Acessar Loja */
 .tab-buttons {
     margin-bottom: 10px;
@@ -895,20 +896,30 @@ body.dark-theme #lista-historico-cliente-adm {
     /* Outros estilos existentes para .tab-buttons */
 }
 
-.footer {
-    margin-top: 30px;
-    padding-top: 20px;
-    border-top: 1px solid #ddd;
-    text-align: center;
-    font-size: 14px;
-    /* Remove qualquer posicionamento fixo ou sticky */
-    position: static !important;
+/* Estilos específicos para a aba de Clientes para posicionar os botões */
+#clients-content {
+    display: flex;
+    flex-direction: column;
+    gap: 20px; /* Espaçamento entre os elementos da seção */
+    min-height: 400px; /* Garante uma altura mínima para o empurrar dos botões */
 }
 
-.footer a.button {
-    /* Garante que os botões dentro do footer sigam o fluxo normal */
-    position: static !important;
+.clients-footer-buttons {
+    margin-top: auto; /* Empurra os botões para a parte inferior */
+    text-align: center; /* Centraliza os botões horizontalmente */
+    padding-top: 20px; /* Adiciona um espaço acima dos botões */
+    border-top: 1px solid #eee; /* Adiciona uma linha acima dos botões para separação */
 }
+
+body.dark-theme .clients-footer-buttons {
+    border-top-color: #444;
+}
+
+.clients-footer-buttons a.button {
+    margin: 0 10px; /* Adiciona um pequeno espaço entre os botões */
+}
+
+
 
 /* Responsivo */
 @media (max-width: 768px) {
