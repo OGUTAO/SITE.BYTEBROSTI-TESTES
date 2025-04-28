@@ -870,6 +870,7 @@ body.dark-theme #lista-historico-cliente-adm {
 }
 
 /* Rodapé */
+/* Rodapé */
 .footer {
     margin-top: 30px;
     padding-top: 20px;
@@ -878,6 +879,9 @@ body.dark-theme #lista-historico-cliente-adm {
     font-size: 14px;
     /* Remove qualquer posicionamento fixo ou sticky que possa estar ativo */
     position: static !important;
+    display: none; /* Esconde o rodapé por padrão */
+    justify-content: center;
+    gap: 10px;
 }
 
 .footer a {
@@ -892,23 +896,36 @@ body.dark-theme .footer {
 .tab-buttons {
     margin-bottom: 10px;
     display: flex;
-    gap: 10px; /* Ajuste o valor do espaçamento conforme necessário */
-    /* Outros estilos existentes para .tab-buttons */
+    gap: 10px;
 }
 
-/* Estilos específicos para a aba de Clientes para posicionar os botões */
+/* Estilos para a div user-controls no header */
+.header-controls .user-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.header-controls .user-controls a {
+    text-decoration: none;
+}
+
+/* Estilos específicos para a aba de Clientes para posicionar os botões (se ainda quisermos tentar) */
 #clients-content {
     display: flex;
     flex-direction: column;
-    gap: 20px; /* Espaçamento entre os elementos da seção */
-    min-height: 400px; /* Garante uma altura mínima para o empurrar dos botões */
+    gap: 20px;
+    min-height: 400px;
 }
 
 .clients-footer-buttons {
-    margin-top: auto; /* Empurra os botões para a parte inferior */
-    text-align: center; /* Centraliza os botões horizontalmente */
-    padding-top: 20px; /* Adiciona um espaço acima dos botões */
-    border-top: 1px solid #eee; /* Adiciona uma linha acima dos botões para separação */
+    margin-top: auto;
+    text-align: center;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
 }
 
 body.dark-theme .clients-footer-buttons {
@@ -916,10 +933,8 @@ body.dark-theme .clients-footer-buttons {
 }
 
 .clients-footer-buttons a.button {
-    margin: 0 10px; /* Adiciona um pequeno espaço entre os botões */
+    margin: 0;
 }
-
-
 
 /* Responsivo */
 @media (max-width: 768px) {

@@ -41,6 +41,7 @@ const tabOffers = document.getElementById('tab-offers');
 const formBuscaCliente = document.getElementById('form-busca-cliente');
 const tabClients = document.getElementById('tab-clients');
 const clientContent = document.getElementById('clients-content')
+const productSearchInput = document.getElementById('product-search');
 
 // Funções para manipulação de dados no localStorage
 function loadProductsFromLocalStorage() {
@@ -188,6 +189,7 @@ function switchTab(tabName) {
     const tabAdminsButton = document.getElementById('tab-admins');
     const adminsContentDiv = document.getElementById('admins-content');
     const clientsContentDiv = document.getElementById('clients-content'); // Obtém a div de clientes
+    const footerButtons = document.querySelector('.footer');
 
     tabs.forEach(tab => {
         if (tab) tab.classList.remove('active');
@@ -200,6 +202,10 @@ function switchTab(tabName) {
     // Esconde a seção de clientes por padrão
     if (clientsContentDiv) {
         clientsContentDiv.style.display = 'none';
+    }
+
+    if (footerButtons) {
+        footerButtons.style.display = 'none';
     }
 
     if (tabName === 'products' && tabProducts && productsContent) {
@@ -346,6 +352,19 @@ const listaHistoricoClienteAdm = document.getElementById('lista-historico-client
 
 if (formBuscarCliente) {
     formBuscarCliente.addEventListener('submit', handleBuscarCliente);
+}
+
+// Event listener para o campo de busca de produtos (filtragem em tempo real)
+if (productSearchInput) {
+    productSearchInput.addEventListener('input', () => {
+        const searchTerm = productSearchInput.value.trim().toLowerCase();
+        const filteredProducts = products.filter(product => {
+            const productNameLower = (product.name || '').toLowerCase();
+            const productDetailsLower = (product.details || '').toLowerCase();
+            return productNameLower.includes(searchTerm) || productDetailsLower.includes(searchTerm);
+        });
+        renderAdminProducts(filteredProducts);
+    });
 }
 
 async function handleBuscarCliente(event) {
